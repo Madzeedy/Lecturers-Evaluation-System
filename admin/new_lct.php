@@ -1,0 +1,65 @@
+<?php
+if(isset($_POST['newstd'])) {
+$stdname = $_POST['name'];
+$stdem = $_POST['email'];
+$stdadd = $_POST['address'];
+$gender = $_POST['gender'];
+$department = $_POST['department'];
+}else{
+	header("location:./");
+}
+
+include '../db_config/connection.php';
+
+if ( !filter_var($stdem,FILTER_VALIDATE_EMAIL) ) {
+			$error = true;
+			$emailError = "Please enter valid email address.";
+			?>
+			<script type="text/javascript">
+				alert('Enter valid email address!');
+				// window.location.href='new_lecturer.php';
+			</script>
+			<?php
+			header("location:new_lecturer.php?msgs=Email $stdem is not valid&students=$student&name=$stdname&regno=$regno&email=$stdem&address=$stdadd&gender=$gender");
+		}
+
+			if( !$error ) {
+				$sql = "SELECT * FROM user_info where email = '$stdem'";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+
+    while($row = $result->fetch_assoc()) {
+		$student = $row['full_name'];
+       header("location:new_lecturer.php?msg=Email $stdem is not available&student=$student");
+    }
+} else {
+  $regdate = date('jS \ F Y h:i:s A');
+$stdno = 'STD:'.rand(1000,9999).'/'.rand(10,99).'/'.rand(0,9).'';
+
+include '../db_config/connection.php';
+$role="Lecturer";
+$sql = "INSERT INTO user_info (user_id, full_name, gender, email, address, regdate,role,department)
+VALUES ('$stdno', '$stdname', '$gender', '$stdem', '$stdadd', '$regdate', '$role', '$department')";
+
+if ($conn->query($sql) === TRUE) {
+    header("location:new_lecturer.php?message=Lecturer with name $stdname have successfully registered !!");
+} else {
+	$error = $conn->error;
+     header("location:new_lecturer.php?err=$error");
+}
+
+$conn->close();
+
+
+
+}
+}else{
+
+}
+
+$conn->close();
+
+?>
+
+
